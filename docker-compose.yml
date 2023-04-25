@@ -1,0 +1,11 @@
+version: "2"
+services:
+  whisper:
+    build: .
+    restart: always
+    tty: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    command: ["gunicorn", "--bind", ":8080", "--workers", "3", "main:app"]
