@@ -30,6 +30,11 @@ app = Flask(__name__)
 CORS(app)
 
 
+@app.route("/")
+def root():
+    return "Hello Whisper!!"
+
+
 @app.route("/whisper/transcribe", methods=["POST"])
 def whisper_transcribe():
     input_file = request.files["file"]
@@ -39,11 +44,6 @@ def whisper_transcribe():
     with open(output, "r") as file:
         contents = file.read()
         return contents
-
-
-# @app.route("/example")
-# def example():
-#     return "example"
 
 
 # app.run(port=4000, debug=True)
