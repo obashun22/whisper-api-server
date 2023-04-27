@@ -10,7 +10,11 @@ SAVE_DIR = "/uploads"
 
 def create_textfile(filename, sr, timelag):
     results = model.transcribe(
-        filename, verbose=False, language="ja", segment_length_ratio=float(sr)
+        filename,
+        verbose=False,
+        language="ja",
+        segment_length_ratio=float(sr),
+        fp16=False,
     )
     output_file = "transcribe.srt"
     with open(output_file, mode="w") as f:
