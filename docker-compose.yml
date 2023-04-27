@@ -8,7 +8,7 @@ services:
       - "10010:8080"
     volumes:
       - .:/app
-      - /mnt/NAS/vr/whisper/voice:/app/uploads
+      - /mnt/NAS/vr/whisper/voice:/uploads
     runtime: nvidia
     command:
       [
