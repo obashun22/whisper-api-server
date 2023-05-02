@@ -1,7 +1,6 @@
-from http import HTTPStatus
 import whisper
 import os
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, send_from_directory, abort
 from flask_cors import CORS
 import threading
 
@@ -65,10 +64,10 @@ def whisper_transcribe():
     timelag = 0  # タイムコードのオフセット
     subthread = threading.Thread(
         target=create_textfile,
-        kargs={"filename": file_path, "sr": segment_length, "timelag": timelag},
+        kwargs={"filename": file_path, "sr": segment_length, "timelag": timelag},
     )
     subthread.start()
-    return HTTPStatus.OK
+    return "OK"
 
 
 @app.route("/whisper/download", methods=["GET"])
@@ -80,4 +79,4 @@ def whisper_download():
             contents = file.read()
             return contents
     else:
-        return HTTPStatus.NOT_FOUND
+        abort(404)
