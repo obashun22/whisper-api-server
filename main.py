@@ -9,6 +9,8 @@ model = whisper.load_model("large")
 UPLOAD_DIR = "/uploads"
 SRT_DIR = "/srt"
 
+output_file = os.path.join(SRT_DIR, "transcribe.srt")
+
 
 def create_textfile(filename, sr, timelag):
     results = model.transcribe(
@@ -18,13 +20,6 @@ def create_textfile(filename, sr, timelag):
         segment_length_ratio=float(sr),
         fp16=False,
     )
-    output_file = "transcribe.srt"
-    output_file = os.path.join(SRT_DIR, output_file)
-    if not os.path.exists(SRT_DIR):  # ディレクトリがなければ作成
-        os.makedirs(SRT_DIR)
-    else:
-        if os.path.exists(output_file):  # srtファイルがあれば削除
-            os.remove(output_file)
     with open(output_file, mode="w") as f:
         for index, _dict in enumerate(results["segments"]):
             start_time = _dict["start"]
@@ -62,6 +57,11 @@ def whisper_transcribe():
 
     segment_length = 1  # 字幕を切り出す長さ
     timelag = 0  # タイムコードのオフセット
+    if not os.path.exists(SRT_DIR):  # ディレクトリがなければ作成
+        os.makedirs(SRT_DIR)
+    else:
+        if os.path.exists(output_file):  # srtファイルがあれば削除
+            os.remove(output_file)
     subthread = threading.Thread(
         target=create_textfile,
         kwargs={"filename": file_path, "sr": segment_length, "timelag": timelag},
