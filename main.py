@@ -1,11 +1,14 @@
+from http import HTTPStatus
 import whisper
 import os
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
+import threading
 
 model = whisper.load_model("large")
 
-SAVE_DIR = "/uploads"
+UPLOAD_DIR = "/uploads"
+SRT_DIR = "/srt"
 
 
 def create_textfile(filename, sr, timelag):
@@ -17,6 +20,12 @@ def create_textfile(filename, sr, timelag):
         fp16=False,
     )
     output_file = "transcribe.srt"
+    output_file = os.path.join(SRT_DIR, output_file)
+    if not os.path.exists(SRT_DIR):  # ディレクトリがなければ作成
+        os.makedirs(SRT_DIR)
+    else:
+        if os.path.exists(output_file):  # srtファイルがあれば削除
+            os.remove(output_file)
     with open(output_file, mode="w") as f:
         for index, _dict in enumerate(results["segments"]):
             start_time = _dict["start"]
@@ -49,12 +58,26 @@ def index():
 @app.route("/whisper/transcribe", methods=["POST"])
 def whisper_transcribe():
     input_file = request.files["file"]
-    file_path = os.path.join(SAVE_DIR, input_file.filename)  # 保存先のパス
+    file_path = os.path.join(UPLOAD_DIR, input_file.filename)  # 保存先のパス
     input_file.save(file_path)  # 入力音声を保存
 
     segment_length = 1  # 字幕を切り出す長さ
     timelag = 0  # タイムコードのオフセット
-    output = create_textfile(filename=file_path, sr=segment_length, timelag=timelag)
-    with open(output, "r") as file:
-        contents = file.read()
-        return contents
+    subthread = threading.Thread(
+        target=create_textfile,
+        kargs={"filename": file_path, "sr": segment_length, "timelag": timelag},
+    )
+    subthread.start()
+    return HTTPStatus.OK
+
+
+@app.route("/whisper/download", methods=["GET"])
+def whisper_download():
+    output_file = "transcribe.srt"
+    output_file = os.path.join(SRT_DIR, output_file)
+    if os.path.exists(output_file):
+        with open(output_file, "r") as file:
+            contents = file.read()
+            return contents
+    else:
+        return HTTPStatus.NOT_FOUND
