@@ -9,7 +9,7 @@ COPY requirements.txt requirements.txt
 
 # パッケージのインストール
 RUN pip install -r requirements.txt
-RUN pip install git+https://github.com/nyanta012/whisper_v3
+RUN pip install git+https://github.com/obashun22/whisper_v3
 RUN apt update && apt install -y ffmpeg
 
 # requirements.txtを削除
