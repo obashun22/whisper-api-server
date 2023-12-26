@@ -4,7 +4,7 @@ from flask import Flask, request, send_from_directory, abort
 from flask_cors import CORS
 import threading
 
-model = whisper.load_model("large-v3")
+model = whisper.load_model("large")
 
 UPLOAD_DIR = "/uploads"
 SRT_DIR = "/srt"
@@ -12,11 +12,12 @@ SRT_DIR = "/srt"
 output_file = os.path.join(SRT_DIR, "transcribe.srt")
 
 
-def create_textfile(filename, timelag):
+def create_textfile(filename, sr, timelag):
     results = model.transcribe(
         filename,
         verbose=False,
         language="ja",
+        segment_length_ratio=float(sr),
         fp16=False,
     )
     with open(output_file, mode="w") as f:
@@ -54,6 +55,7 @@ def whisper_transcribe():
     file_path = os.path.join(UPLOAD_DIR, input_file.filename)  # 保存先のパス
     input_file.save(file_path)  # 入力音声を保存
 
+    segment_length = 1  # 字幕を切り出す長さ
     timelag = 0  # タイムコードのオフセット
     if not os.path.exists(SRT_DIR):  # ディレクトリがなければ作成
         os.makedirs(SRT_DIR)
@@ -62,7 +64,7 @@ def whisper_transcribe():
             os.remove(output_file)
     subthread = threading.Thread(
         target=create_textfile,
-        kwargs={"filename": file_path, "timelag": timelag},
+        kwargs={"filename": file_path, "sr": segment_length, "timelag": timelag},
     )
     subthread.start()
     return "OK"
