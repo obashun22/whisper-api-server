@@ -4,7 +4,7 @@ from flask import Flask, request, send_from_directory, abort
 from flask_cors import CORS
 import threading
 
-model = whisper.load_model("large-v3")
+model = whisper.load_model("large-v2")
 
 UPLOAD_DIR = "/uploads"
 SRT_DIR = "/srt"
